@@ -19,6 +19,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlin.math.roundToInt
+import kotlin.random.Random
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,8 +56,12 @@ fun TypingTestApp() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TypingScreen(onComplete: (Float, Float, Float) -> Unit) {
-    val sampleText = "The quick brown fox jumps over the lazy dog"
-    val words = sampleText.split(" ")
+    var randomWords = arrayOf("mouse", "keyboard", "dog", "laptop", "class", "faculty", "brain", "the", "quick", "brown", "fox", "jumps", "tablet", "charger", "over")
+    val words by remember {
+        mutableStateOf(
+            randomWords.toList().shuffled(Random).take(20)
+        )
+    }
     var typedText by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf(0L) }
     var wordStatuses by remember { mutableStateOf(List(words.size) { WordStatus.NOT_TYPED }) }

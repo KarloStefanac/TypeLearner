@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "545145079705",
+    "project_id": "typelearner-1534b",
+    "storage_bucket": "typelearner-1534b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545145079705:android:cba75fcac1d824d7a83508",
+        "android_client_info": {
+          "package_name": "hr.ferit.typelearner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFzGUYvH53muc4nwsyrPRxNX_8hzMF-8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

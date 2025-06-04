@@ -1,13 +1,12 @@
 package hr.ferit.typelearner
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -26,55 +25,116 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import org.json.JSONArray
+import com.google.firebase.firestore.FirebaseFirestore
+import hr.ferit.typelearner.model.UserData
+import hr.ferit.typelearner.model.repository.ModelRepository
+import hr.ferit.typelearner.view.HomeScreenView
+import hr.ferit.typelearner.view.LoginScreenView
+import hr.ferit.typelearner.view.RegisterScreenView
+import hr.ferit.typelearner.view.TypingScreenView
+import hr.ferit.typelearner.view.factory.LoginViewModelFactory
+import hr.ferit.typelearner.view.factory.RegisterViewModelFactory
+import hr.ferit.typelearner.view.factory.TypingViewModelFactory
+import hr.ferit.typelearner.viewmodel.HomeViewModel
+import hr.ferit.typelearner.viewmodel.LoginViewModel
+import hr.ferit.typelearner.viewmodel.RegisterViewModel
+import hr.ferit.typelearner.viewmodel.TypingViewModel
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-fun loadWordsFromAssets(context: Context): List<String> {
-    val json: String = context.assets.open("words.json")
-        .bufferedReader()
-        .use { it.readText() }
-
-    val jsonArray = JSONArray(json)
-    val wordList = mutableListOf<String>()
-
-    for (i in 0 until jsonArray.length()) {
-        wordList.add(jsonArray.getString(i))
-    }
-
-    return wordList
-}
-
 class MainActivity : ComponentActivity() {
+    private val firestore = FirebaseFirestore.getInstance()
+    private val repository = ModelRepository()
+    private val loginViewModel: LoginViewModel by viewModels { LoginViewModelFactory(repository) }
+    private val registerViewModel: RegisterViewModel by viewModels { RegisterViewModelFactory(repository) }
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val typingViewModel: TypingViewModel by viewModels { TypingViewModelFactory(repository, applicationContext) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TypingTestApp()
+            TypingTestApp(
+                loginViewModel = loginViewModel,
+                registerViewModel = registerViewModel,
+                homeViewModel = homeViewModel,
+                typingViewModel = typingViewModel
+            )
         }
     }
 }
 
 @Composable
-fun TypingTestApp() {
+fun TypingTestApp(
+    loginViewModel: LoginViewModel,
+    registerViewModel: RegisterViewModel,
+    homeViewModel: HomeViewModel,
+    typingViewModel: TypingViewModel
+)  {
     val navController = rememberNavController()
+    var user by remember { mutableStateOf<UserData?>(null) }
     MaterialTheme {
         NavHost(navController = navController, startDestination = "home") {
+            composable("login") {
+                LoginScreenView(
+                    viewModel = loginViewModel,
+                    onLoginSuccess = { loggedInUser ->
+                        user = loggedInUser
+                        homeViewModel.setUser(loggedInUser)
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    },
+                    onRegister = { navController.navigate("register") }
+                )
+            }
+            composable("register") {
+                RegisterScreenView(
+                    viewModel = registerViewModel,
+                    onRegisterSuccess = { registeredUser ->
+                        user = registeredUser
+                        homeViewModel.setUser(registeredUser)
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                )
+            }
             composable("home") {
-                HomeScreen(
-                    onStartTyping = { navController.navigate("typing") },
-                    onCustomTest = { navController.navigate("custom") }
+                HomeScreenView(
+                    viewModel = homeViewModel,
+                    onStartTyping = {
+                        if (user != null) {
+                            navController.navigate("typing")
+                        } else {
+                            navController.navigate("login")
+                        }
+                    },
+                    onCustomTest = {
+                        if (user != null) {
+                            navController.navigate("custom")
+                        } else {
+                            navController.navigate("login")
+                        }
+                    },
+                    onLogin = { navController.navigate("login") }
                 )
             }
             composable("typing") {
-                TypingScreen(
-                    isCustom = false,
-                    customText = null,
-                    timeLimit = null,
-                    minAccuracy = null,
-                    onComplete = { wpm, accuracy, time ->
-                        navController.navigate("results/$wpm/$accuracy/$time")
-                    }
-                )
+                user?.let { currentUser ->
+                    TypingScreenView(
+                        viewModel = typingViewModel,
+                        userId = currentUser.id,
+                        isCustom = false,
+                        customText = null,
+                        timeLimit = null,
+                        minAccuracy = null,
+                        onComplete = { wpm, accuracy, time ->
+                            navController.navigate("results/$wpm/$accuracy/$time")
+                        }
+                    )
+                } ?: run {
+                    navController.navigate("login")
+                }
             }
             composable("custom") {
                 CustomTestScreen { text, timeLimit, minAccuracy ->
@@ -82,19 +142,24 @@ fun TypingTestApp() {
                 }
             }
             composable("typing?customText={customText}&timeLimit={timeLimit}&minAccuracy={minAccuracy}") { backStackEntry ->
-                val customText = backStackEntry.arguments?.getString("customText") ?: ""
-                val timeLimit = backStackEntry.arguments?.getString("timeLimit")?.toFloatOrNull()
-                val minAccuracy =
-                    backStackEntry.arguments?.getString("minAccuracy")?.toFloatOrNull()
-                TypingScreen(
-                    isCustom = true,
-                    customText = customText,
-                    timeLimit = timeLimit,
-                    minAccuracy = minAccuracy,
-                    onComplete = { wpm, accuracy, time ->
-                        navController.navigate("results/$wpm/$accuracy/$time")
-                    }
-                )
+                user?.let { currentUser ->
+                    val customText = backStackEntry.arguments?.getString("customText") ?: ""
+                    val timeLimit = backStackEntry.arguments?.getString("timeLimit")?.toFloatOrNull()
+                    val minAccuracy = backStackEntry.arguments?.getString("minAccuracy")?.toFloatOrNull()
+                    TypingScreenView(
+                        viewModel = typingViewModel,
+                        userId = currentUser.id,
+                        isCustom = true,
+                        customText = customText,
+                        timeLimit = timeLimit,
+                        minAccuracy = minAccuracy,
+                        onComplete = { wpm, accuracy, time ->
+                            navController.navigate("results/$wpm/$accuracy/$time")
+                        }
+                    )
+                } ?: run {
+                    navController.navigate("login")
+                }
             }
             composable("results/{wpm}/{accuracy}/{time}") { backStackEntry ->
                 val wpm = backStackEntry.arguments?.getString("wpm")?.toFloatOrNull() ?: 0f
@@ -197,7 +262,8 @@ fun TypingScreen(
     minAccuracy: Float?,
     onComplete: (Float, Float, Float) -> Unit
 ) {
-    var randomWords = loadWordsFromAssets(LocalContext.current)
+    val repository = ModelRepository()
+    var randomWords = repository.loadWordsFromAssets(LocalContext.current)
     val words by remember {
         mutableStateOf(
             if (isCustom && customText != null && customText.isNotBlank()) {
@@ -222,7 +288,7 @@ fun TypingScreen(
             if (timeLeft <= 0) {
                 val timeSeconds = (System.currentTimeMillis() - startTime) / 1000f
                 val correctWords = wordStatuses.count { it == WordStatus.CORRECT }
-                val wpm = if (timeSeconds > 0) (correctWords / timeSeconds * 60).roundToInt().toFloat() else 0f
+            val wpm = if (timeSeconds > 0) (correctWords / timeSeconds * 60).roundToInt().toFloat() else 0f
                 val accuracy = (correctWords.toFloat() / words.size * 100).roundToInt().toFloat()
                 onComplete(wpm, accuracy, timeSeconds)
             }

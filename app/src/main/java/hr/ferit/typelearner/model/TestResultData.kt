@@ -1,7 +1,9 @@
 package hr.ferit.typelearner.model
 
-data class TestResult (
-    val id : String,
+import java.util.UUID
+
+data class TestResultData (
+    val id : String = UUID.randomUUID().toString(),
     val userId : String,
     val testId : String,
     val wpm : Float,

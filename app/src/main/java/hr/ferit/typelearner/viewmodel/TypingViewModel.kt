@@ -33,7 +33,7 @@ class TypingViewModel(
 
         val test = TestData(
             text = words.joinToString(" "),
-            minAccuracy = minAccuracy?.toFloat() ?: 0.0,
+            minAccuracy = minAccuracy?.toFloat() ?: 0.0f,
             time = (timeLimit?.toLong() ?: 0L),
             userId = userId
         )

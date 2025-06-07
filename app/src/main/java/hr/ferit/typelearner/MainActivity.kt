@@ -203,7 +203,12 @@ fun TypingTestApp(
                 user?.let { currentUser ->
                     TestsScreenView(
                         viewModel = testsViewModel,
-                        onBack = {navController.popBackStack()}
+                        onBack = {navController.popBackStack()},
+                        onTestSelected = { test ->
+                            val timeLimit = if (test.time > 0) (test.time) else null
+                            val minAccuracy = if (test.minAccuracy > 0) test.minAccuracy else null
+                            navController.navigate("typing?customText=${test.text}&timeLimit=$timeLimit&minAccuracy=$minAccuracy")
+                        }
                     )
                 } ?: run {
                     navController.navigate("login")

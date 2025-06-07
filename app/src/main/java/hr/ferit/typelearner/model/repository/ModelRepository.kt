@@ -121,7 +121,7 @@ class ModelRepository{
                         id = document.id,  // Use document ID as id
                         userId = document.getString("userId") ?: "",
                         text = document.getString("text") ?: "",
-                        minAccuracy = document.get("minAccuracy") ?: "",
+                        minAccuracy = (document.get("minAccuracy") as? Number)?.toFloat() ?: 0f,
                         time = document.getLong("time") ?: 0L
                     )
                 } catch (e: Exception) {

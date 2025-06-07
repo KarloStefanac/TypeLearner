@@ -2,6 +2,7 @@ package hr.ferit.typelearner.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,8 @@ import hr.ferit.typelearner.viewmodel.TestsViewModel
 @Composable
 fun TestsScreenView(
     viewModel: TestsViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onTestSelected: (TestData) -> Unit
     ){
     val uiState by viewModel.uiState.collectAsState()
 
@@ -88,7 +90,9 @@ fun TestsScreenView(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(uiState.tests.size) { index ->
-                    GridCard(test = uiState.tests[index])
+                    GridCard(
+                        test = uiState.tests[index],
+                        onClick = {onTestSelected(uiState.tests[index])})
                 }
             }
         }
@@ -96,11 +100,12 @@ fun TestsScreenView(
 }
 
 @Composable
-fun GridCard(test: TestData) {
+fun GridCard(test: TestData, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f), // Ensures square cards
+            .aspectRatio(1f)
+            .clickable { (onClick()) },
         colors = CardDefaults.cardColors(containerColor = Color.LightGray),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {

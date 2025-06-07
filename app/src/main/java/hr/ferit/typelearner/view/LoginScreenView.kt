@@ -2,6 +2,7 @@ package hr.ferit.typelearner.view
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +38,7 @@ fun LoginScreenView(viewModel: LoginViewModel, onLoginSuccess: (UserData) -> Uni
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF5E0F27))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -45,7 +47,8 @@ fun LoginScreenView(viewModel: LoginViewModel, onLoginSuccess: (UserData) -> Uni
             text = "Login",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp),
+            color = Color.White
         )
         OutlinedTextField(
             value = uiState.username,
@@ -54,7 +57,7 @@ fun LoginScreenView(viewModel: LoginViewModel, onLoginSuccess: (UserData) -> Uni
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            textStyle = TextStyle(fontSize = 16.sp)
+            textStyle = TextStyle(fontSize = 16.sp, color = Color.White)
         )
         OutlinedTextField(
             value = uiState.password,
@@ -63,7 +66,7 @@ fun LoginScreenView(viewModel: LoginViewModel, onLoginSuccess: (UserData) -> Uni
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp),
-            textStyle = TextStyle(fontSize = 16.sp),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )

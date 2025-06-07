@@ -33,10 +33,10 @@ fun HomeScreenView(
     viewModel: HomeViewModel,
     onStartTyping: () -> Unit,
     onCustomTest: () -> Unit,
-    onLogin: () -> Unit
+    onLogin: () -> Unit,
+    onTestsScreen: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    Log.d("TypingVM", "Entered HomeScreenView")
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,7 +62,7 @@ fun HomeScreenView(
         }
         Spacer(modifier = Modifier.padding(10.dp))
         Button(
-            onClick = onStartTyping,
+            onClick = onTestsScreen,
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .height(56.dp)

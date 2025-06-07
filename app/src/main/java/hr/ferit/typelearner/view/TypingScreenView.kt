@@ -17,7 +17,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import hr.ferit.typelearner.viewmodel.TypingViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,18 +43,27 @@ fun TypingScreenView(
     onComplete: (Float, Float, Float) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(Unit) {
+    // Initialize test only once when the screen is first composed or parameters change
+    LaunchedEffect(userId, isCustom, customText, timeLimit, minAccuracy) {
+        Log.d("TypingVM", "${uiState.isCompleted}")
         viewModel.initializeTest(isCustom, customText, timeLimit, minAccuracy, userId)
     }
 
+    // Update time left periodically
     LaunchedEffect(uiState.isStarted, uiState.timeLeft) {
-        viewModel.updateTimeLeft()
+        if (uiState.isStarted && uiState.timeLimit != null && uiState.timeLeft > 0) {
+            kotlinx.coroutines.delay(1000L)
+            viewModel.updateTimeLeft()
+        }
     }
 
-    if (uiState.isCompleted) {
-        onComplete(uiState.wpm, uiState.accuracy, ((System.currentTimeMillis() - uiState.startTime) / 1000f))
+    // Trigger navigation on test completion
+    LaunchedEffect(uiState.isCompleted) {
+        if (uiState.isCompleted) {
+            onComplete(uiState.wpm, uiState.accuracy, uiState.elapsedTime)
+        }
     }
+
 
     Column(
         modifier = Modifier
@@ -66,7 +77,8 @@ fun TypingScreenView(
             Text(
                 text = "Time Left: ${String.format("%.0f", uiState.timeLeft)} seconds",
                 fontSize = 20.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
+                color = Color.White
             )
         }
         FlowRow(
@@ -74,7 +86,7 @@ fun TypingScreenView(
             horizontalArrangement = Arrangement.Center
         ) {
             uiState.words.forEachIndexed { index, word ->
-                Log.d("TypingVM", "Selected words: $word")
+//                Log.d("TypingVM", "Selected words: $word")
                 Text(
                     text = "$word ",
                     fontSize = 20.sp,
@@ -98,7 +110,7 @@ fun TypingScreenView(
                 fontSize = 18.sp,
                 color = Color.White // 👈 Set text color to white
             ),
-            enabled = uiState.timeLeft > 0,
+            enabled = uiState.timeLeft > 0 && !uiState.isCompleted,
         )
     }
 }

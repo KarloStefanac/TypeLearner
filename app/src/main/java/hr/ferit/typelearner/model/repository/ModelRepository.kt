@@ -1,6 +1,7 @@
 package hr.ferit.typelearner.model.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import hr.ferit.typelearner.model.StatsData
@@ -100,14 +101,42 @@ class ModelRepository{
 
     fun addTest(test: TestData) {
         tests.add(test)
-        // Optionally save to Firestore
         db.collection("tests").document(test.id).set(test)
     }
 
     fun addTestResult(result: TestResultData) {
         testResults.add(result)
-        // Optionally save to Firestore
         db.collection("testResults").document(result.id).set(result)
+    }
+
+    suspend fun getAllTests(): Result<List<TestData>>{
+        return try {
+            val querySnapshot = db.collection("tests")
+                .get()
+                .await()
+
+            val firestoreTests = querySnapshot.documents.mapNotNull { document ->
+                try {
+                    TestData(
+                        id = document.id,  // Use document ID as id
+                        userId = document.getString("userId") ?: "",
+                        text = document.getString("text") ?: "",
+                        minAccuracy = document.get("minAccuracy") ?: "",
+                        time = document.getLong("time") ?: 0L
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            val allTests = (tests + firestoreTests).distinctBy { it.id }
+
+            Log.d("TypingVM", "Tests: ${allTests}")
+
+            Result.success(allTests)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     fun loadWordsFromAssets(context: Context): List<String> {

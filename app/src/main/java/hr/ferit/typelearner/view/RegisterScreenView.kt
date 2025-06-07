@@ -1,5 +1,6 @@
 package hr.ferit.typelearner.view
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,6 +36,7 @@ fun RegisterScreenView(viewModel: RegisterViewModel, onRegisterSuccess: (UserDat
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF5E0F27))
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -43,7 +45,8 @@ fun RegisterScreenView(viewModel: RegisterViewModel, onRegisterSuccess: (UserDat
             text = "Register",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp),
+            color = Color.White
         )
         OutlinedTextField(
             value = uiState.username,
@@ -52,7 +55,7 @@ fun RegisterScreenView(viewModel: RegisterViewModel, onRegisterSuccess: (UserDat
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            textStyle = TextStyle(fontSize = 16.sp)
+            textStyle = TextStyle(fontSize = 16.sp, color = Color.White)
         )
         OutlinedTextField(
             value = uiState.email,
@@ -61,7 +64,7 @@ fun RegisterScreenView(viewModel: RegisterViewModel, onRegisterSuccess: (UserDat
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            textStyle = TextStyle(fontSize = 16.sp),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
         OutlinedTextField(
@@ -71,7 +74,7 @@ fun RegisterScreenView(viewModel: RegisterViewModel, onRegisterSuccess: (UserDat
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp),
-            textStyle = TextStyle(fontSize = 16.sp),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
@@ -101,7 +104,8 @@ fun RegisterScreenView(viewModel: RegisterViewModel, onRegisterSuccess: (UserDat
         ) {
             Text(
                 text = "Register",
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                color = Color.White
             )
         }
     }

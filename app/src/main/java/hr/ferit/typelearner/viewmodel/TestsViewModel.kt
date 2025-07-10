@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import hr.ferit.typelearner.model.TestData
 import hr.ferit.typelearner.model.repository.ModelRepository
-import hr.ferit.typelearner.viewmodel.TypingViewModel.TypingUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

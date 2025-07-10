@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.FirebaseFirestore
+import hr.ferit.typelearner.model.TestData
 import hr.ferit.typelearner.model.UserData
 import hr.ferit.typelearner.model.repository.ModelRepository
 import hr.ferit.typelearner.view.CustomTestView
@@ -137,6 +138,7 @@ fun TypingTestApp(
                         customText = null,
                         timeLimit = null,
                         minAccuracy = null,
+                        testId = null,
                         onComplete = { wpm, accuracy, time ->
                             navController.navigate("results/$wpm/$accuracy/$time")
                         }
@@ -147,10 +149,10 @@ fun TypingTestApp(
             }
             composable("custom") {
                 user?.let {
-                    Log.d("TypingVM", "Custom test")
                     CustomTestView(
                         viewModel = customTestViewModel,
                         onStartCustomTest = { text, timeLimit, minAccuracy ->
+                            Log.d("TypingVM", "custom: ${text},${timeLimit},${minAccuracy}")
                             navController.navigate("typing?customText=$text&timeLimit=$timeLimit&minAccuracy=$minAccuracy")
                         }
                     )
@@ -160,10 +162,11 @@ fun TypingTestApp(
             }
             composable("typing?customText={customText}&timeLimit={timeLimit}&minAccuracy={minAccuracy}") { backStackEntry ->
                 user?.let { currentUser ->
-                    Log.d("TypingVM", "Typing with parameters")
                     val customText = backStackEntry.arguments?.getString("customText") ?: ""
                     val timeLimit = backStackEntry.arguments?.getString("timeLimit")?.toFloatOrNull()
                     val minAccuracy = backStackEntry.arguments?.getString("minAccuracy")?.toFloatOrNull()
+                    Log.d("TypingVM", "typing?customText= ${customText},${timeLimit},${minAccuracy}")
+
                     TypingScreenView(
                         viewModel = typingViewModel,
                         userId = currentUser.id,
@@ -171,10 +174,42 @@ fun TypingTestApp(
                         customText = customText,
                         timeLimit = timeLimit,
                         minAccuracy = minAccuracy,
+                        testId = null,
                         onComplete = { wpm, accuracy, time ->
                             navController.navigate("results/$wpm/$accuracy/$time")
                         }
                     )
+                } ?: run {
+                    navController.navigate("login")
+                }
+            }
+            composable("typing/timed/{testId}") { backStackEntry ->
+                user?.let { currentUser ->
+                    val testId = backStackEntry.arguments?.getString("testId") ?: ""
+                    var test by remember { mutableStateOf<TestData?>(null) }
+                    LaunchedEffect(testId) {
+                        val result = typingViewModel.loadTestById(testId)
+                        if (result.isSuccess) {
+                            test = result.getOrNull()
+                        }
+                    }
+                    if (test != null) {
+                        TypingScreenView(
+                            viewModel = typingViewModel,
+                            userId = currentUser.id,
+                            isCustom = false,
+                            customText = null,
+                            timeLimit = null,
+                            minAccuracy = null,
+                            testId = testId,
+                            test = test,
+                            onComplete = { wpm, accuracy, duration ->
+                                navController.navigate("results/$wpm/$accuracy/$duration")
+                            }
+                        )
+                    } else {
+                        Text("Loading test or test not found")
+                    }
                 } ?: run {
                     navController.navigate("login")
                 }
@@ -205,9 +240,7 @@ fun TypingTestApp(
                         viewModel = testsViewModel,
                         onBack = {navController.popBackStack()},
                         onTestSelected = { test ->
-                            val timeLimit = if (test.time > 0) (test.time) else null
-                            val minAccuracy = if (test.minAccuracy > 0) test.minAccuracy else null
-                            navController.navigate("typing?customText=${test.text}&timeLimit=$timeLimit&minAccuracy=$minAccuracy")
+                            navController.navigate("typing/timed/${test.id}")
                         }
                     )
                 } ?: run {

@@ -28,7 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import hr.ferit.typelearner.WordStatus
 import androidx.compose.ui.text.TextStyle
+import hr.ferit.typelearner.model.TestData
 import hr.ferit.typelearner.model.repository.ModelRepository
+import java.util.UUID
 
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -40,18 +42,38 @@ fun TypingScreenView(
     customText: String?,
     timeLimit: Float?,
     minAccuracy: Float?,
+    testId: String?,
+    test: TestData? = null,
     onComplete: (Float, Float, Float) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // Initialize test only once when the screen is first composed or parameters change
-    LaunchedEffect(userId, isCustom, customText, timeLimit, minAccuracy) {
-        Log.d("TypingVM", "${uiState.isCompleted}")
-        viewModel.initializeTest(isCustom, customText, timeLimit, minAccuracy, userId)
+    LaunchedEffect(userId, isCustom, customText, timeLimit, minAccuracy, testId, test) {
+        if (test != null && testId != null) {
+            Log.d("TypingVM", "Going into initializeTimedTest")
+            viewModel.initializeTimedTest(test, userId)
+        } else {
+            Log.d("TypingVM", "Going into initializeTest")
+            viewModel.initializeTest(
+                isCustom = isCustom,
+                customText = customText,
+                timeLimit = timeLimit,
+                minAccuracy = minAccuracy,
+                userId = userId,
+                testId = testId ?: UUID.randomUUID().toString()
+            )
+        }
     }
+
+//    // Initialize test only once when the screen is first composed or parameters change
+//    LaunchedEffect(userId, isCustom, customText, timeLimit, minAccuracy) {
+//        Log.d("TypingVM", "${uiState.isCompleted}")
+//        viewModel.initializeTest(isCustom, customText, timeLimit, minAccuracy, userId)
+//    }
 
     // Update time left periodically
     LaunchedEffect(uiState.isStarted, uiState.timeLeft) {
         if (uiState.isStarted && uiState.timeLimit != null && uiState.timeLeft > 0) {
+            Log.d("TypingVM", "Going into updateTimeLeft")
             kotlinx.coroutines.delay(1000L)
             viewModel.updateTimeLeft()
         }

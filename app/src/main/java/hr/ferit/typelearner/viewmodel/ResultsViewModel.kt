@@ -10,8 +10,8 @@ class ResultsViewModel(private val repository: ModelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ResultsUiState())
     val uiState: StateFlow<ResultsUiState> = _uiState.asStateFlow()
 
-    fun initialize(wpm: Float, accuracy: Float, duration: Float, userId: String){
-        val stats = repository.getStatistics(userId)
+    suspend fun initialize(wpm: Float, accuracy: Float, duration: Float, userId: String){
+        val stats = repository.getStatistics(userId).getOrNull()
         _uiState.value = ResultsUiState(
             wpm = wpm,
             accuracy = accuracy,

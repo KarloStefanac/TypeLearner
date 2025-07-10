@@ -106,7 +106,7 @@ fun HomeScreenView(
                 .height(56.dp)
         ) {
             Text(
-                text = "My tests",
+                text = "Profile",
                 fontSize = 18.sp
             )
         }

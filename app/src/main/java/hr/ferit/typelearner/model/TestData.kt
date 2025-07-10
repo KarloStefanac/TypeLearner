@@ -8,6 +8,6 @@ data class TestData(
     val userId : String,
     val text: String,
     val minAccuracy: Float,
-    val time: Long,
+    val time: Float,
     val timestamp: com.google.firebase.Timestamp? = null
 )

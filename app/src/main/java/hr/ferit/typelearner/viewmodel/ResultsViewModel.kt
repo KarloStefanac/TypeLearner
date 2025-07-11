@@ -1,25 +1,31 @@
 package hr.ferit.typelearner.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import hr.ferit.typelearner.model.repository.ModelRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class ResultsViewModel(private val repository: ModelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(ResultsUiState())
     val uiState: StateFlow<ResultsUiState> = _uiState.asStateFlow()
 
-    suspend fun initialize(wpm: Float, accuracy: Float, duration: Float, userId: String){
-        val stats = repository.getStatistics(userId).getOrNull()
-        _uiState.value = ResultsUiState(
-            wpm = wpm,
-            accuracy = accuracy,
-            duration = duration,
-            averageWpm = stats?.wpm ?: 0.0f,
-            topWpm = stats?.topWpm ?: 0.0f,
-            testsFinished = stats?.testsFinished ?: 0
-        )
+    fun initialize(wpm: Float, accuracy: Float, duration: Float, userId: String){
+            viewModelScope.launch {
+            val stats = repository.getStatistics(userId)
+            _uiState.value = ResultsUiState(
+                wpm = wpm,
+                accuracy = accuracy,
+                duration = duration,
+                averageWpm = stats?.wpm ?: 0.0f,
+                averageAccuracy = stats?.accuracy ?: 0.0f,
+                topWpm = stats?.topWpm ?: 0.0f,
+                testsFinished = stats?.testsFinished ?: 0
+            )
+        }
     }
 
     data class ResultsUiState(

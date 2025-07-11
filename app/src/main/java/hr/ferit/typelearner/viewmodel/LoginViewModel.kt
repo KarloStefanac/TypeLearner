@@ -12,24 +12,33 @@ class LoginViewModel(private val repository: ModelRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun updateUsername(username: String) {
-        _uiState.value = _uiState.value.copy(username = username)
+    fun updateEmail(email: String) {
+        _uiState.value = _uiState.value.copy(email = email)
     }
 
     fun updatePassword(password: String) {
         _uiState.value = _uiState.value.copy(password = password)
     }
 
+    fun resetState() {
+        _uiState.value = LoginUiState()
+    }
+
     suspend fun login(): Result<UserData> {
-        val result = repository.authenticateUser(_uiState.value.username, _uiState.value.password)
-        _uiState.value = _uiState.value.copy(
-            loginError = if (result.isSuccess) null else result.exceptionOrNull()?.message
-        )
-        return result
+        return try {
+            val result = repository.authenticateUser(_uiState.value.email, _uiState.value.password)
+            _uiState.value = _uiState.value.copy(
+                loginError = if (result.isSuccess) null else result.exceptionOrNull()?.message
+            )
+            result
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(loginError = e.message)
+            Result.failure(e)
+        }
     }
 
     data class LoginUiState(
-        val username: String = "",
+        val email: String = "",
         val password: String = "",
         val loginError: String? = null
     )

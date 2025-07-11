@@ -15,6 +15,10 @@ class HomeViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(user = user)
     }
 
+    fun clearUser() {
+        _uiState.value = _uiState.value.copy(user = null)
+    }
+
     data class HomeUiState(
         val user: UserData? = null
     )

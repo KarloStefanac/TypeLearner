@@ -122,18 +122,10 @@ class TypingViewModel(
         if (currentState.isStarted && currentState.timeLimit != null && currentState.timeLeft > 0) {
             val newTimeLeft = currentState.timeLeft - 1L
             _uiState.value = currentState.copy(timeLeft = newTimeLeft)
-            Log.d("TypingVM", "Updated time left")
 
             if (newTimeLeft <= 0) {
                 completeTest()
             }
-        }
-    }
-
-    fun updateStatisticsAsync(userId: String, wpm: Float, accuracy: Float) {
-        viewModelScope.launch {
-            Log.d("TypingVM", "Async update statistics: ${userId},${wpm},${accuracy}")
-            repository.updateStatistics(userId, wpm, accuracy)
         }
     }
 
@@ -158,7 +150,12 @@ class TypingViewModel(
             passed = passed
         )
         repository.addTestResult(result)
-        updateStatisticsAsync(currentState.userId, wpm, accuracy)
+        if (passed) {
+            viewModelScope.launch {
+                repository.updateStatistics(currentState.userId, wpm, accuracy, context)
+
+            }
+        }
 
         _uiState.value = currentState.copy(
             wpm = wpm,

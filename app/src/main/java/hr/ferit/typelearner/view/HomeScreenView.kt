@@ -34,7 +34,9 @@ fun HomeScreenView(
     onStartTyping: () -> Unit,
     onCustomTest: () -> Unit,
     onLogin: () -> Unit,
-    onTestsScreen: () -> Unit
+    onTestsScreen: () -> Unit,
+    onResults: () -> Unit,
+    onProfile: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     Column(
@@ -87,7 +89,7 @@ fun HomeScreenView(
         Spacer(modifier = Modifier.padding(30.dp))
 
         Button(
-            onClick = onStartTyping,
+            onClick = onResults,
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .height(56.dp)
@@ -100,7 +102,7 @@ fun HomeScreenView(
         Spacer(modifier = Modifier.padding(10.dp))
 
         Button(
-            onClick = onStartTyping,
+            onClick = onProfile,
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .height(56.dp)

@@ -51,13 +51,14 @@ fun LoginScreenView(viewModel: LoginViewModel, onLoginSuccess: (UserData) -> Uni
             color = Color.White
         )
         OutlinedTextField(
-            value = uiState.username,
-            onValueChange = { viewModel.updateUsername(it) },
-            label = { Text("Username") },
+            value = uiState.email,
+            onValueChange = { viewModel.updateEmail(it) },
+            label = { Text("Email") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            textStyle = TextStyle(fontSize = 16.sp, color = Color.White)
+            textStyle = TextStyle(fontSize = 16.sp, color = Color.White),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
         OutlinedTextField(
             value = uiState.password,
@@ -91,7 +92,7 @@ fun LoginScreenView(viewModel: LoginViewModel, onLoginSuccess: (UserData) -> Uni
                     }
                 }
             },
-            enabled = uiState.username.isNotBlank() && uiState.password.isNotBlank(),
+            enabled = uiState.email.isNotBlank() && uiState.password.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth(0.6f)
                 .height(56.dp)
